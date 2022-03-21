@@ -1,0 +1,32 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.1.32228.430
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{25076290-0B55-48E7-A0F4-41019568E55E}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{39365A4F-59A0-4576-9E99-339FAD8C07B0}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Opc.AwsSettings", "src\Opc.AwsSettings\Opc.AwsSettings.csproj", "{122C66DD-1926-43A1-BD97-BE6375DE8DF6}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{122C66DD-1926-43A1-BD97-BE6375DE8DF6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{122C66DD-1926-43A1-BD97-BE6375DE8DF6}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{122C66DD-1926-43A1-BD97-BE6375DE8DF6}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{122C66DD-1926-43A1-BD97-BE6375DE8DF6}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{122C66DD-1926-43A1-BD97-BE6375DE8DF6} = {25076290-0B55-48E7-A0F4-41019568E55E}
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {7A6BC76E-787D-4120-B7A1-DCD8F806DD78}
+	EndGlobalSection
+EndGlobal

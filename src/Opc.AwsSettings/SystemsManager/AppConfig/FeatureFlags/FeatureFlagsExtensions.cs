@@ -36,7 +36,7 @@ public static class FeatureFlagsExtensions
             ApplicationIdentifier = applicationIdentifier,
             EnvironmentIdentifier = environment,
             ConfigurationProfileIdentifier = configurationProfileIdentifier,
-            PollingInterval = reloadAfter ?? TimeSpan.FromMinutes(10)
+            PollingInterval = reloadAfter
         };
 
         return configurationBuilder.AddFeatureFlags(options, logger);

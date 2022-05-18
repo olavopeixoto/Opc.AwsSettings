@@ -16,7 +16,7 @@ public static class SecretsManagerExtensions
         configurator?.Invoke(options);
 
         var source = new SecretsManagerConfigurationSource(options, logger);
-        
+
         configurationBuilder.Add(source);
 
         return configurationBuilder;

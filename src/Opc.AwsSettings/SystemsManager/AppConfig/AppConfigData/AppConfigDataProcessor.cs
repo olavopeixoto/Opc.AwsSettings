@@ -4,20 +4,23 @@ using Amazon.AppConfigData.Model;
 using Amazon.Extensions.Configuration.SystemsManager.Internal;
 using Microsoft.Extensions.Logging;
 
-namespace Opc.AwsSettings.SystemsManager.AppConfig.FeatureFlags;
+namespace Opc.AwsSettings.SystemsManager.AppConfig.AppConfigData;
 
-public class FeatureFlagsProcessor : ISystemsManagerProcessor
+public class AppConfigDataProcessor : ISystemsManagerProcessor
 {
-    protected readonly FeatureFlagsConfigurationSource Source;
-    private readonly ILogger? _logger;
-
     private const string FeatureManagementKeyRoot = "FeatureManagement";
+
+    private static readonly Regex FeatureManagementKeyRegex = new("^[^:]+:enabled$|^[^:]+:enabledFor(:.*)?$",
+        RegexOptions.Compiled & RegexOptions.IgnoreCase & RegexOptions.Singleline);
+
+    private readonly ILogger? _logger;
+    protected readonly AppConfigDataSource Source;
     private string? _configurationToken;
-    private DateTime? _nextPollConfigurationTokenExpirationTime;
 
     private IDictionary<string, string> _lastConfiguration = new Dictionary<string, string>();
+    private DateTime? _nextPollConfigurationTokenExpirationTime;
 
-    public FeatureFlagsProcessor(FeatureFlagsConfigurationSource source, ILogger? logger = null)
+    public AppConfigDataProcessor(AppConfigDataSource source, ILogger? logger = null)
     {
         Source = source ?? throw new ArgumentNullException(nameof(source));
 
@@ -40,24 +43,19 @@ public class FeatureFlagsProcessor : ISystemsManagerProcessor
     {
         var responseStream = await FetchConfigurationAsync(CancellationToken.None);
 
-        if (responseStream == null)
-        {
-            return _lastConfiguration;
-        }
+        if (responseStream == null) return _lastConfiguration;
 
         var parsedConfiguration = ParseData(responseStream);
 
-        if (parsedConfiguration.Any())
-        {
-            _lastConfiguration = parsedConfiguration;
-        }
+        if (parsedConfiguration.Any()) _lastConfiguration = parsedConfiguration;
 
         return _lastConfiguration;
     }
 
     protected virtual async ValueTask<Stream?> FetchConfigurationAsync(CancellationToken cancellationToken)
     {
-        using var client = Source.AwsOptions?.CreateServiceClient<IAmazonAppConfigData>() ?? throw new ArgumentNullException(nameof(Source.AwsOptions));
+        using var client = Source.AwsOptions?.CreateServiceClient<IAmazonAppConfigData>() ??
+                           throw new ArgumentNullException(nameof(Source.AwsOptions));
 
         if (client is AmazonAppConfigDataClient amazonAppConfigClient)
             amazonAppConfigClient.BeforeRequestEvent += ServiceClientAppender.ServiceClientBeforeRequestEvent;
@@ -97,13 +95,10 @@ public class FeatureFlagsProcessor : ISystemsManagerProcessor
     {
         var tempData = JsonConfigurationParser.Parse(responseStream);
 
-        if (tempData is null)
-        {
-            return new Dictionary<string, string>();
-        }
+        if (tempData is null) return new Dictionary<string, string>();
 
-        _logger?.FeatureFlagsLoaded(tempData.GroupBy(x => x.Key.Split(':')[0]).Count());
-        _logger?.FeatureFlagsValueLoaded(tempData);
+        _logger?.ParametersLoaded(tempData.GroupBy(x => x.Key.Split(':')[0]).Count());
+        _logger?.ParametersValueLoaded(tempData);
 
         return tempData
             .Where(x => FeatureManagementKeyRegex.IsMatch(x.Key))
@@ -119,20 +114,22 @@ public class FeatureFlagsProcessor : ISystemsManagerProcessor
         {
             if (newWord)
             {
-                yield return char.ToUpper(c); newWord = false;
+                yield return char.ToUpper(c);
+                newWord = false;
             }
             else
             {
                 yield return c;
             }
+
             if (c is ' ' or ':') newWord = true;
         }
     }
 
     private static string ParseFeatureFlagKey(string value)
     {
-        return string.IsNullOrWhiteSpace(value) ? value : value.Replace(":enabled", string.Empty, StringComparison.InvariantCultureIgnoreCase);
+        return string.IsNullOrWhiteSpace(value)
+            ? value
+            : value.Replace(":enabled", string.Empty, StringComparison.InvariantCultureIgnoreCase);
     }
-
-    private static readonly Regex FeatureManagementKeyRegex = new("^[^:]+:enabled$|^[^:]+:enabledFor(:.*)?$", RegexOptions.Compiled & RegexOptions.IgnoreCase & RegexOptions.Singleline);
 }

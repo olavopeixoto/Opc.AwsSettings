@@ -6,8 +6,7 @@ using Microsoft.Extensions.Logging;
 using Opc.AwsSettings;
 using Opc.AwsSettings.SecretsManager;
 using Opc.AwsSettings.Settings;
-using Opc.AwsSettings.SystemsManager.AppConfig.FeatureFlags;
-using Opc.AwsSettings.SystemsManager.AppConfig.FreeForm;
+using Opc.AwsSettings.SystemsManager.AppConfig.AppConfigData;
 using Opc.AwsSettings.SystemsManager.ParameterStore;
 
 // ReSharper disable once CheckNamespace
@@ -17,10 +16,11 @@ public static class ConfigurationExtensions
 {
     private static string GetEnvironmentName(string? environmentName)
     {
-        return !string.IsNullOrWhiteSpace(environmentName) ? environmentName
-                                                             : Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT")
-                                                             ?? Environment.GetEnvironmentVariable("DOTNET_ENVIRONMENT")
-                                                             ?? Environments.Production;
+        return !string.IsNullOrWhiteSpace(environmentName)
+            ? environmentName
+            : Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT")
+              ?? Environment.GetEnvironmentVariable("DOTNET_ENVIRONMENT")
+              ?? Environments.Production;
     }
 
     /// <summary>
@@ -38,6 +38,12 @@ public static class ConfigurationExtensions
     }
 
     public static IConfigurationBuilder AddAwsSettings(this IConfigurationBuilder configurationBuilder,
+        ILogger? logger = null)
+    {
+        return AddAwsSettings(configurationBuilder, null, logger);
+    }
+
+    public static IConfigurationBuilder AddAwsSettings(this IConfigurationBuilder configurationBuilder,
         string? environmentName = null, ILogger? logger = null)
     {
         var currentConfiguration = configurationBuilder.Build();
@@ -51,12 +57,14 @@ public static class ConfigurationExtensions
 
         AddAppConfig(configurationBuilder, awsSettings.AppConfig, awsSettings.ReloadAfter, environmentName, logger);
 
-        AddSecretsManager(configurationBuilder, awsSettings.SecretsManager, awsSettings.ReloadAfter, environmentName, logger);
+        AddSecretsManager(configurationBuilder, awsSettings.SecretsManager, awsSettings.ReloadAfter, environmentName,
+            logger);
 
         return configurationBuilder;
     }
 
-    private static void AddParameterStore(this IConfigurationBuilder configurationBuilder, ParameterStoreSettings? settings, TimeSpan? reloadAfter, ILogger? logger = null)
+    public static void AddParameterStore(this IConfigurationBuilder configurationBuilder,
+        ParameterStoreSettings? settings, TimeSpan? reloadAfter, ILogger? logger = null)
     {
         if (settings is null) return;
 
@@ -66,27 +74,27 @@ public static class ConfigurationExtensions
                 .Select(path =>
                     new ParameterStoreKeySettings
                     {
-                        Path = path,
+                        Path = path
                     }));
 
         foreach (var key in keys)
-        {
-            configurationBuilder.AddParameterStore(key, reloadAfter, logger);
-        }
+            AddParameterStore(configurationBuilder, key, reloadAfter, logger);
     }
 
-    private static void AddParameterStore(this IConfigurationBuilder configurationBuilder, ParameterStoreKeySettings key, TimeSpan? reloadAfter, ILogger? logger)
+    public static void AddParameterStore(this IConfigurationBuilder configurationBuilder, ParameterStoreKeySettings key,
+        TimeSpan? reloadAfter, ILogger? logger)
     {
         configurationBuilder.AddSystemsManager(options =>
         {
+            options.Optional = false;
             options.Path = key.Path;
             options.Prefix = key.Alias;
             options.ReloadAfter = reloadAfter;
 
             options.OnLoadException = exceptionContext =>
             {
-                logger?.ErrorLoadingFromParameterStore(exceptionContext.Exception, exceptionContext.Provider.GetType().Name);
-                exceptionContext.Ignore = options.Optional;
+                logger?.ErrorLoadingFromProvider(exceptionContext.Exception, exceptionContext.Provider.GetType().Name);
+                exceptionContext.Ignore = key.Optional;
             };
 
             options.ParameterProcessor = new ArraySupportParameterProcessor();
@@ -95,56 +103,36 @@ public static class ConfigurationExtensions
         });
     }
 
-    private static void AddAppConfig(this IConfigurationBuilder configurationBuilder, AppConfigSettings? settings,
+    public static void AddAppConfig(this IConfigurationBuilder configurationBuilder, AppConfigSettings? settings,
         TimeSpan? reloadAfter, string environmentName, ILogger? logger = null)
     {
         if (settings is null) return;
 
-        foreach (var freeFormConfig in settings.FreeFormConfigurations)
+        foreach (var config in settings.ConfigurationProfiles)
         {
-            var source = new AppConfigFreeFormConfigurationSource(logger, settings.UseLambdaCacheLayer)
-            {
-                ApplicationId = settings.ApplicationIdentifier,
-                ConfigProfileId = freeFormConfig.ConfigurationProfileIdentifier,
-                EnvironmentId = environmentName,
-                ReloadAfter = reloadAfter,
-                Optional = false,
-                ClientId = Guid.NewGuid().ToString(),
-                OnLoadException = exceptionContext =>
-                {
-                    logger?.ErrorLoadingFromParameterStore(exceptionContext.Exception, exceptionContext.Provider.GetType().Name);
-                    exceptionContext.Ignore = freeFormConfig.Optional;
-                }
-            };
-
-            configurationBuilder.AddFreeFormAppConfig(source);
-
-            logger?.AddedAppConfigFreeformConfiguration(settings.ApplicationIdentifier, environmentName, freeFormConfig.ConfigurationProfileIdentifier, reloadAfter);
-        }
-
-        foreach (var featureSettings in settings.FeatureFlags)
-        {
-            var source = new FeatureFlagsConfigurationSource(logger)
+            var source = new AppConfigDataSource(logger, settings.UseLambdaCacheLayer)
             {
                 ApplicationIdentifier = settings.ApplicationIdentifier,
-                ConfigurationProfileIdentifier = featureSettings.ConfigurationProfileIdentifier,
+                ConfigurationProfileIdentifier = config.Identifier,
                 EnvironmentIdentifier = environmentName,
                 ReloadAfter = reloadAfter,
                 Optional = false,
                 OnLoadException = exceptionContext =>
                 {
-                    logger?.ErrorLoadingFromParameterStore(exceptionContext.Exception, exceptionContext.Provider.GetType().Name);
-                    exceptionContext.Ignore = featureSettings.Optional;
+                    logger?.ErrorLoadingFromProvider(exceptionContext.Exception,
+                        exceptionContext.Provider.GetType().Name);
+                    exceptionContext.Ignore = config.Optional;
                 }
             };
 
-            configurationBuilder.AddFeatureFlags(source);
+            configurationBuilder.AddAppConfig(source);
 
-            logger?.AddedAppConfigFeatureFlags(settings.ApplicationIdentifier, environmentName, featureSettings.ConfigurationProfileIdentifier, reloadAfter);
+            logger?.AddedAppConfigDataConfiguration(settings.ApplicationIdentifier, environmentName, config.Identifier,
+                reloadAfter);
         }
     }
 
-    private static void AddSecretsManager(this IConfigurationBuilder configurationBuilder,
+    public static void AddSecretsManager(this IConfigurationBuilder configurationBuilder,
         SecretsManagerSettings? settings, TimeSpan? reloadAfter, string environmentName, ILogger? logger = null)
     {
         if (settings is null) return;
@@ -155,7 +143,7 @@ public static class ConfigurationExtensions
             (settings.AcceptedSecretArns is null || settings.AcceptedSecretArns.Count <= 0))
             return;
 
-        configurationBuilder.AddSecretsManager(configurator: options =>
+        configurationBuilder.AddSecretsManager(options =>
         {
             if (settings.AcceptedSecretArns is not null && settings.AcceptedSecretArns.Count > 0)
             {
@@ -167,7 +155,7 @@ public static class ConfigurationExtensions
             {
                 IEnumerable<string> prefixes = new[]
                 {
-                    $"{secretsManagerPrefix}/", 
+                    $"{secretsManagerPrefix}/",
                     $"{environmentName}/"
                 };
 
@@ -203,7 +191,6 @@ public static class ConfigurationExtensions
                     return result.Replace(@"/", ":");
                 };
             }
-
         }, logger);
     }
 }

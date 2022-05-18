@@ -2,14 +2,17 @@ using System.Reflection;
 using Amazon.Extensions.Configuration.SystemsManager.Internal;
 using Microsoft.Extensions.Configuration;
 
-namespace Opc.AwsSettings.SystemsManager.AppConfig.FeatureFlags;
+namespace Opc.AwsSettings.SystemsManager.AppConfig.AppConfigData;
 
 public static class AppConfigExtensions
 {
-    public static IConfigurationBuilder AddFeatureFlags(this IConfigurationBuilder configurationBuilder, FeatureFlagsConfigurationSource source)
+    public static IConfigurationBuilder AddAppConfig(this IConfigurationBuilder configurationBuilder,
+        AppConfigDataSource source)
     {
-        source.ApplicationIdentifier ??= Assembly.GetCallingAssembly().GetName().Name ?? throw new NullReferenceException("Unable to parse ApplicationIdentifier. Calling Assembly Name is null");
-        
+        source.ApplicationIdentifier ??= Assembly.GetCallingAssembly().GetName().Name ??
+                                         throw new NullReferenceException(
+                                             "Unable to parse ApplicationIdentifier. Calling Assembly Name is null");
+
         if (string.IsNullOrWhiteSpace(source.ConfigurationProfileIdentifier))
             throw new ArgumentNullException(nameof(source.ConfigurationProfileIdentifier));
 

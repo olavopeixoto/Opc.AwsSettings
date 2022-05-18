@@ -7,7 +7,8 @@ namespace Microsoft.Extensions.Configuration;
 public static class AwsSettingsExtensions
 {
     /// <summary>
-    /// Add configuration source from AWS Parameter Store, Secrets Manager, AppConfig Freeform Configuration and AppConfig Feature Flags
+    ///     Add configuration source from AWS Parameter Store, Secrets Manager, AppConfig Freeform Configuration and AppConfig
+    ///     Feature Flags
     /// </summary>
     /// <param name="builder">HostBuilder</param>
     /// <param name="logger">Optional logger to return information about data being loaded</param>

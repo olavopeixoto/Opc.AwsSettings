@@ -34,11 +34,11 @@ namespace Opc.AwsSettings.SecretsManager
         public Func<SecretListEntry, bool> SecretFilter { get; set; } = _ => true;
 
         /// <summary>
-        /// A list of filters that get passed to the client to filter the listed secrets before returning them. 
+        /// A function that returns a list of filters that get passed to the client to filter the listed secrets before returning them. 
         /// </summary>
         /// <example>
         /// <code>
-        /// ListSecretsFilters = new List&lt;Filter&gt;
+        /// ListSecretsFilters = () => new List&lt;Filter&gt;
         /// {
         ///     new Filter
         ///     {
@@ -48,7 +48,7 @@ namespace Opc.AwsSettings.SecretsManager
         /// };
         /// </code>
         /// </example>
-        public List<Filter> ListSecretsFilters { get; set; } = new();
+        public Func<List<Filter>> ListSecretsFilters { get; set; } = () => new List<Filter>();
 
         /// <summary>
         /// Defines a function that can be used to generate secret keys.

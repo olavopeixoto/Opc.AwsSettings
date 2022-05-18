@@ -13,9 +13,10 @@
 
     <ItemGroup>
       <PackageReference Include="Amazon.Extensions.Configuration.SystemsManager" Version="3.0.0" />
-      <PackageReference Include="AWSSDK.AppConfigData" Version="3.7.0.38" />
-      <PackageReference Include="AWSSDK.SecretsManager" Version="3.7.2.20" />
-      <PackageReference Include="AWSSDK.SimpleSystemsManagement" Version="3.7.4.11" />
+      <PackageReference Include="AWSSDK.AppConfigData" Version="3.7.0.58" />
+      <PackageReference Include="AWSSDK.SecretsManager" Version="3.7.2.42" />
+      <PackageReference Include="AWSSDK.SecurityToken" Version="3.7.1.151" />
+      <PackageReference Include="AWSSDK.SimpleSystemsManagement" Version="3.7.17.4" />
       <PackageReference Include="Microsoft.Extensions.Configuration.Abstractions" Version="6.0.0" />
       <PackageReference Include="Microsoft.Extensions.Configuration.Binder" Version="6.0.0" />
       <PackageReference Include="Microsoft.Extensions.Hosting.Abstractions" Version="6.0.0" />

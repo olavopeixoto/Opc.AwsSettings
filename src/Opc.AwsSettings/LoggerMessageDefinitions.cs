@@ -14,8 +14,11 @@ public static partial class LoggerMessageDefinitions
     public static partial void AddedSecretsManager(this ILogger logger, IEnumerable<string> paths, TimeSpan? reloadAfter);
     
     [LoggerMessage(EventId = 3, Level = LogLevel.Information, Message = "Added AWS AppConfig Freeform Configuration with Application Identifier: {ApplicationIdentifier}, Environment Name: {EnvironmentName}, Configuration Profile Identifier: {ConfigurationProfileIdentifier} and reloading after {ReloadAfter}")]
-    public static partial void AddedAppConfigFreeformConfiguration(this ILogger logger, string applicationIdentifier, string environmentName, string configurationProfileIdentifier, TimeSpan? reloadAfter);
-    
+    public static partial void AddedAppConfigFreeformConfiguration(this ILogger logger, string applicationIdentifier, string? environmentName, string configurationProfileIdentifier, TimeSpan? reloadAfter);
+
     [LoggerMessage(EventId = 4, Level = LogLevel.Warning, Message = "Error loading from {providerType}")]
     public static partial void ErrorLoadingFromParameterStore(this ILogger logger, Exception exception, string providerType);
+
+    [LoggerMessage(EventId = 5, Level = LogLevel.Information, Message = "Added AWS AppConfig Feature Flags with Application Identifier: {ApplicationIdentifier}, Environment Name: {EnvironmentName}, Configuration Profile Identifier: {ConfigurationProfileIdentifier} and reloading after {ReloadAfter}")]
+    public static partial void AddedAppConfigFeatureFlags(this ILogger logger, string applicationIdentifier, string? environmentName, string configurationProfileIdentifier, TimeSpan? reloadAfter);
 }

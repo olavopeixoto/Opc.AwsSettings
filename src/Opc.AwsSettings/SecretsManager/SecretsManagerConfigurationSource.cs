@@ -8,8 +8,7 @@ namespace Opc.AwsSettings.SecretsManager
     {
         private readonly ILogger? _logger;
 
-        public SecretsManagerConfigurationSource(SecretsManagerConfigurationProviderOptions? options = null,
-            ILogger? logger = null)
+        public SecretsManagerConfigurationSource(SecretsManagerConfigurationProviderOptions? options = null, ILogger? logger = null)
         {
             _logger = logger;
             Options = options ?? new SecretsManagerConfigurationProviderOptions();
@@ -33,5 +32,4 @@ namespace Opc.AwsSettings.SecretsManager
             return client;
         }
     }
-
 }

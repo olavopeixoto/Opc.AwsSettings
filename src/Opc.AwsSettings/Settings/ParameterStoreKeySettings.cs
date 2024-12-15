@@ -5,7 +5,7 @@ public record ParameterStoreKeySettings
     /// <summary>
     ///     Use prefix /aws/reference/secretsmanager/{my-key} for Secrets Manager values
     /// </summary>
-    public string Path { get; init; }
+    public required string Path { get; init; }
 
     /// <summary>
     ///     Alternative name to map to configuration.

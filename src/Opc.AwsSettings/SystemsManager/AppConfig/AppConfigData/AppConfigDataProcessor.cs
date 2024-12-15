@@ -102,7 +102,7 @@ public class AppConfigDataProcessor : ISystemsManagerProcessor
 
         return tempData
             .Where(x => FeatureManagementKeyRegex.IsMatch(x.Key))
-            .Select(x => KeyValuePair.Create($"{FeatureManagementKeyRoot}:{ParseFeatureFlagKey(x.Key)}", x.Value))
+            .Select(x => new KeyValuePair<string, string>($"{FeatureManagementKeyRoot}:{ParseFeatureFlagKey(x.Key)}", x.Value))
             .Union(tempData)
             .ToDictionary(x => new string(KeyToTitleCase(x.Key).ToArray()), x => x.Value);
     }
@@ -130,6 +130,6 @@ public class AppConfigDataProcessor : ISystemsManagerProcessor
     {
         return string.IsNullOrWhiteSpace(value)
             ? value
-            : value.Replace(":enabled", string.Empty, StringComparison.InvariantCultureIgnoreCase);
+            : value.Replace(":enabled", string.Empty);
     }
 }

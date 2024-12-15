@@ -17,7 +17,7 @@ public static class ConfigurationExtensions
     private static string GetEnvironmentName(string? environmentName)
     {
         return !string.IsNullOrWhiteSpace(environmentName)
-            ? environmentName
+            ? environmentName!
             : Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT")
               ?? Environment.GetEnvironmentVariable("DOTNET_ENVIRONMENT")
               ?? Environments.Production;
@@ -165,14 +165,14 @@ public static class ConfigurationExtensions
 
                 if (!settings.LoadAll)
                 {
-                    options.ListSecretsFilters = () => new List<Filter>
-                    {
-                        new()
+                    options.ListSecretsFilters = () =>
+                    [
+                        new Filter
                         {
                             Key = FilterNameStringType.Name,
                             Values = prefixes.ToList()
                         }
-                    };
+                    ];
 
                     options.SecretFilter = secret =>
                     {

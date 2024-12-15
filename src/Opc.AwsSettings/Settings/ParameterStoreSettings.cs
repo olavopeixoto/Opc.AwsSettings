@@ -19,11 +19,11 @@ public record ParameterStoreSettings
     ///     public record MyOption2(MyOtherObject MyProperty);
     ///     public record MyOtherObject(string MyKey);
     /// </example>
-    public string[] Paths { get; init; } = Array.Empty<string>();
+    public string[] Paths { get; init; } = [];
 
     /// <summary>
     ///     If you need custom mapping between Parameter Store names and your Options objects you may use this settings instead
     ///     of just Paths.
     /// </summary>
-    public ParameterStoreKeySettings[] Keys { get; init; } = Array.Empty<ParameterStoreKeySettings>();
+    public ParameterStoreKeySettings[] Keys { get; init; } = [];
 }

@@ -3,7 +3,7 @@ namespace Opc.AwsSettings.Settings;
 /// <summary>
 ///     Controls from where to read the configuration and how to map it to your options objects
 /// </summary>
-public record AwsSettings
+public sealed record AwsSettings
 {
     /// <summary>
     ///     Determines how to read configuration from AWS Systems Manager / Parameter Store.<br />
@@ -14,7 +14,10 @@ public record AwsSettings
     /// <summary>
     ///     Determines how to read configuration from AWS Systems Manager / AppConfig
     /// </summary>
-    public AppConfigSettings AppConfig { get; init; } = new();
+    public AppConfigSettings AppConfig { get; init; } = new()
+    {
+        ApplicationIdentifier = string.Empty
+    };
 
     /// <summary>
     ///     Determines how to read configuration from Secrets Manager in a more flexible way than using

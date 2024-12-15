@@ -1,5 +1,4 @@
-﻿using System.Net.Mime;
-using System.Web;
+﻿using System.Web;
 using Microsoft.Extensions.Logging;
 using Opc.AwsSettings.SystemsManager.AppConfig.AppConfigData;
 
@@ -7,6 +6,7 @@ namespace Opc.AwsSettings.SystemsManager.AppConfig.Lambda;
 
 public class LambdaCacheAppConfigFreeFormConfigurationProcessor : AppConfigDataProcessor
 {
+    private const string MediaTypeApplicationJson = "application/json";
     private static readonly HttpClient HttpClient = new();
     private readonly int _port;
 
@@ -24,12 +24,12 @@ public class LambdaCacheAppConfigFreeFormConfigurationProcessor : AppConfigDataP
 
         var response = await HttpClient.GetAsync(url, cancellationToken);
 
-        if (response.Content.Headers.ContentType?.MediaType != MediaTypeNames.Application.Json)
+        if (response.Content.Headers.ContentType?.MediaType != MediaTypeApplicationJson)
             throw new NotImplementedException("Not implemented AppConfig type: " +
                                               response.Content.Headers.ContentType?.MediaType);
 
         return response.Content.Headers.ContentLength > 0L
-            ? await response.Content.ReadAsStreamAsync(cancellationToken)
+            ? await response.Content.ReadAsStreamAsync()
             : null;
     }
 }

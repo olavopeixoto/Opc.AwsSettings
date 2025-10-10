@@ -1,6 +1,9 @@
+using JetBrains.Annotations;
+
 namespace Opc.AwsSettings.Settings;
 
-public record ParameterStoreSettings
+[PublicAPI]
+public sealed record ParameterStoreSettings
 {
     /// <summary>
     ///     Prefix used to load values from Parameter Store. All keys matching the given path prefix will be loaded.<br />

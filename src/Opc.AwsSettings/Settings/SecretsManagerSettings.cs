@@ -1,6 +1,9 @@
+using JetBrains.Annotations;
+
 namespace Opc.AwsSettings.Settings;
 
-public record SecretsManagerSettings
+[PublicAPI]
+public sealed record SecretsManagerSettings
 {
     /// <summary>
     /// </summary>

@@ -1,5 +1,6 @@
 using Amazon.SecretsManager;
 using Amazon.SecretsManager.Model;
+using JetBrains.Annotations;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
@@ -7,25 +8,21 @@ using Newtonsoft.Json.Linq;
 
 namespace Opc.AwsSettings.SecretsManager;
 
-public class SecretsManagerConfigurationProvider : ConfigurationProvider, IDisposable
+[PublicAPI]
+internal sealed class SecretsManagerConfigurationProvider(
+    IAmazonSecretsManager client,
+    SecretsManagerConfigurationProviderOptions options,
+    ILogger? logger = null)
+    : ConfigurationProvider, IDisposable
 {
-    private readonly ILogger? _logger;
     private CancellationTokenSource? _cancellationToken;
 
     private HashSet<(string, string)> _loadedValues = new();
     private Task? _pollingTask;
 
-    public SecretsManagerConfigurationProvider(IAmazonSecretsManager client,
-        SecretsManagerConfigurationProviderOptions options, ILogger? logger = null)
-    {
-        _logger = logger;
-        Options = options ?? throw new ArgumentNullException(nameof(options));
-        Client = client ?? throw new ArgumentNullException(nameof(client));
-    }
+    public SecretsManagerConfigurationProviderOptions Options { get; } = options ?? throw new ArgumentNullException(nameof(options));
 
-    public SecretsManagerConfigurationProviderOptions Options { get; }
-
-    public IAmazonSecretsManager Client { get; }
+    public IAmazonSecretsManager Client { get; } = client ?? throw new ArgumentNullException(nameof(client));
 
     public void Dispose()
     {
@@ -39,16 +36,17 @@ public class SecretsManagerConfigurationProvider : ConfigurationProvider, IDispo
         }
         catch (TaskCanceledException)
         {
+            // Ignore
         }
 
         _pollingTask = null;
 
-        _logger?.SecretsManagerConfigurationProviderDisposed();
+        logger?.SecretsManagerConfigurationProviderDisposed();
     }
 
     public override void Load()
     {
-        if (_cancellationToken is null) _cancellationToken = new CancellationTokenSource();
+        _cancellationToken ??= new CancellationTokenSource();
 
         LoadAsync(_cancellationToken.Token).ConfigureAwait(false).GetAwaiter().GetResult();
     }
@@ -83,7 +81,7 @@ public class SecretsManagerConfigurationProvider : ConfigurationProvider, IDispo
             }
             catch (Exception ex)
             {
-                _logger?.ErrorPollingForChanges(ex);
+                logger?.ErrorPollingForChanges(ex);
             }
         }
     }
@@ -121,7 +119,7 @@ public class SecretsManagerConfigurationProvider : ConfigurationProvider, IDispo
         }
     }
 
-    private static IEnumerable<(string key, string value)> ExtractValues(JToken token, string prefix)
+    private static IEnumerable<(string key, string value)> ExtractValues(JToken? token, string prefix)
     {
         switch (token)
         {
@@ -157,7 +155,7 @@ public class SecretsManagerConfigurationProvider : ConfigurationProvider, IDispo
             }
             case JValue jValue:
             {
-                var value = jValue.Value.ToString();
+                var value = jValue.Value?.ToString() ?? string.Empty;
                 yield return (prefix, value);
                 break;
             }
@@ -243,14 +241,14 @@ public class SecretsManagerConfigurationProvider : ConfigurationProvider, IDispo
                     configuration.Add((configurationKey, secretString));
                 }
 
-                _logger?.SecretLoaded(secret.ARN);
+                logger?.SecretLoaded(secret.ARN);
             }
             catch (ResourceNotFoundException e)
             {
-                _logger?.ErrorLoadingSecret(secret.Name, secret.ARN, e);
+                logger?.ErrorLoadingSecret(secret.Name, secret.ARN, e);
             }
 
-        _logger?.SecretsLoaded(secrets.Count);
+        logger?.SecretsLoaded(secrets.Count);
 
         return configuration;
     }

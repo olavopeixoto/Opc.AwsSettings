@@ -2,7 +2,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Opc.AwsSettings.SecretsManager;
 
-public static partial class LoggerMessageDefinitions
+internal static partial class LoggerMessageDefinitions
 {
     [LoggerMessage(EventId = 1, Level = LogLevel.Warning, Message = "Error polling for changes in Secrets Manager")]
     public static partial void ErrorPollingForChanges(this ILogger logger, Exception exception);

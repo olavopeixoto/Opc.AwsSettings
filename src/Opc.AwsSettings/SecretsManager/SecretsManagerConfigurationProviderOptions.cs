@@ -4,7 +4,7 @@ using Amazon.SecretsManager.Model;
 
 namespace Opc.AwsSettings.SecretsManager;
 
-public class SecretsManagerConfigurationProviderOptions
+public sealed class SecretsManagerConfigurationProviderOptions
 {
     /// <summary>
     ///     A list of identifiers for the secrets that are to be retrieved.
@@ -23,7 +23,7 @@ public class SecretsManagerConfigurationProviderOptions
     /// </code>
     ///     </example>
     /// </summary>
-    public List<string> AcceptedSecretArns { get; set; } = new();
+    public List<string> AcceptedSecretArns { get; set; } = [];
 
     /// <summary>
     ///     A function that determines whether or not a given secret should be retrieved.
@@ -86,5 +86,5 @@ public class SecretsManagerConfigurationProviderOptions
     /// <summary>
     ///     AwsOptions
     /// </summary>
-    public AWSOptions AwsOptions { get; set; }
+    public AWSOptions? AwsOptions { get; set; }
 }

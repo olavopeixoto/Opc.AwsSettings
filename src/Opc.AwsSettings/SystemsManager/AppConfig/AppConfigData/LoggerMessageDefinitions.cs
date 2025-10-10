@@ -2,7 +2,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Opc.AwsSettings.SystemsManager.AppConfig.AppConfigData;
 
-public static partial class LoggerMessageDefinitions
+internal static partial class LoggerMessageDefinitions
 {
     [LoggerMessage(EventId = 1, Level = LogLevel.Information, Message = "{Count} Parameters have been loaded")]
     public static partial void ParametersLoaded(this ILogger logger, int count);

@@ -1,6 +1,9 @@
+using JetBrains.Annotations;
+
 namespace Opc.AwsSettings.Settings;
 
-public record ParameterStoreKeySettings
+[PublicAPI]
+public sealed record ParameterStoreKeySettings
 {
     /// <summary>
     ///     Use prefix /aws/reference/secretsmanager/{my-key} for Secrets Manager values

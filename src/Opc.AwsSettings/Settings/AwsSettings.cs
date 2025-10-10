@@ -1,8 +1,11 @@
+using JetBrains.Annotations;
+
 namespace Opc.AwsSettings.Settings;
 
 /// <summary>
 ///     Controls from where to read the configuration and how to map it to your options objects
 /// </summary>
+[PublicAPI]
 public sealed record AwsSettings
 {
     /// <summary>

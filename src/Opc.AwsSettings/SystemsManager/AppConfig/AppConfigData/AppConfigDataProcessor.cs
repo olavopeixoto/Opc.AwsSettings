@@ -6,7 +6,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Opc.AwsSettings.SystemsManager.AppConfig.AppConfigData;
 
-public class AppConfigDataProcessor : ISystemsManagerProcessor
+internal class AppConfigDataProcessor : ISystemsManagerProcessor
 {
     private const string FeatureManagementKeyRoot = "FeatureManagement";
 

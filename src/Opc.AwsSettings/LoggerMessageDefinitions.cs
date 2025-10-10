@@ -2,7 +2,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Opc.AwsSettings;
 
-public static partial class LoggerMessageDefinitions
+internal static partial class LoggerMessageDefinitions
 {
     [LoggerMessage(EventId = 1, Level = LogLevel.Information,
         Message = "Added AWS Parameter Store using path: {Path} and reloading after: {ReloadAfter}")]

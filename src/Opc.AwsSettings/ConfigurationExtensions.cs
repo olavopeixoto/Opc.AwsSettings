@@ -1,17 +1,19 @@
 using System.Text.RegularExpressions;
 using Amazon.SecretsManager;
 using Amazon.SecretsManager.Model;
+using JetBrains.Annotations;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using Opc.AwsSettings.Settings;
 using Opc.AwsSettings;
 using Opc.AwsSettings.SecretsManager;
-using Opc.AwsSettings.Settings;
 using Opc.AwsSettings.SystemsManager.AppConfig.AppConfigData;
 using Opc.AwsSettings.SystemsManager.ParameterStore;
 
 // ReSharper disable once CheckNamespace
 namespace Microsoft.Extensions.Configuration;
 
+[PublicAPI]
 public static class ConfigurationExtensions
 {
     private static string GetEnvironmentName(string? environmentName)
@@ -53,11 +55,17 @@ public static class ConfigurationExtensions
 
         environmentName = GetEnvironmentName(environmentName);
 
-        AddParameterStore(configurationBuilder, awsSettings.ParameterStore, awsSettings.ReloadAfter, logger);
+        configurationBuilder.AddAppConfig(awsSettings.AppConfig, awsSettings.ReloadAfter, environmentName, logger);
 
-        AddAppConfig(configurationBuilder, awsSettings.AppConfig, awsSettings.ReloadAfter, environmentName, logger);
+        // Allow loading secrets from AppConfig
+        currentConfiguration = configurationBuilder.Build();
+        awsSettings = currentConfiguration.GetSettings<AwsSettings>();
 
-        AddSecretsManager(configurationBuilder, awsSettings.SecretsManager, awsSettings.ReloadAfter, environmentName,
+        if (awsSettings is null) return configurationBuilder;
+
+        configurationBuilder.AddParameterStore(awsSettings.ParameterStore, awsSettings.ReloadAfter, logger);
+
+        configurationBuilder.AddSecretsManager(awsSettings.SecretsManager, awsSettings.ReloadAfter, environmentName,
             logger);
 
         return configurationBuilder;
@@ -153,11 +161,11 @@ public static class ConfigurationExtensions
             }
             else
             {
-                IEnumerable<string> prefixes = new[]
-                {
+                List<string> prefixes =
+                [
                     $"{secretsManagerPrefix}/",
                     $"{environmentName}/"
-                };
+                ];
 
                 logger?.AddedSecretsManager(prefixes, reloadAfter);
 
@@ -170,7 +178,7 @@ public static class ConfigurationExtensions
                         new Filter
                         {
                             Key = FilterNameStringType.Name,
-                            Values = prefixes.ToList()
+                            Values = prefixes
                         }
                     ];
 
@@ -188,7 +196,7 @@ public static class ConfigurationExtensions
                 {
                     var result = regexs.Aggregate(key, (current, regex) => regex.Replace(current, string.Empty, 1));
 
-                    return result.Replace(@"/", ":");
+                    return result.Replace("/", ":");
                 };
             }
         }, logger);

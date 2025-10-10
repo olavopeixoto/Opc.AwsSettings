@@ -5,8 +5,6 @@ VisualStudioVersion = 17.1.32228.430
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{25076290-0B55-48E7-A0F4-41019568E55E}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{39365A4F-59A0-4576-9E99-339FAD8C07B0}"
-EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Opc.AwsSettings", "src\Opc.AwsSettings\Opc.AwsSettings.csproj", "{122C66DD-1926-43A1-BD97-BE6375DE8DF6}"
 EndProject
 Global

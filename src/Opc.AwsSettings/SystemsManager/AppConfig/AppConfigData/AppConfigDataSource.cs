@@ -7,22 +7,14 @@ using Opc.AwsSettings.SystemsManager.AppConfig.Lambda;
 
 namespace Opc.AwsSettings.SystemsManager.AppConfig.AppConfigData;
 
-public class AppConfigDataSource : ISystemsManagerConfigurationSource
+internal sealed class AppConfigDataSource(ILogger? logger = null, bool useLambdaCacheLayer = false)
+    : ISystemsManagerConfigurationSource
 {
-    private readonly ILogger? _logger;
-    private readonly bool _useLambdaCacheLayer;
-
-    public AppConfigDataSource(ILogger? logger = null, bool useLambdaCacheLayer = false)
-    {
-        _logger = logger;
-        _useLambdaCacheLayer = useLambdaCacheLayer;
-    }
-
-    public string EnvironmentIdentifier { get; set; }
+    public string? EnvironmentIdentifier { get; set; }
 
     public string? ApplicationIdentifier { get; set; }
 
-    public string ConfigurationProfileIdentifier { get; set; }
+    public string? ConfigurationProfileIdentifier { get; set; }
 
     /// <summary>
     ///     AwsOptions
@@ -47,12 +39,12 @@ public class AppConfigDataSource : ISystemsManagerConfigurationSource
 
     public bool Optional { get; set; }
 
-    public Action<SystemsManagerExceptionContext> OnLoadException { get; set; }
+    public Action<SystemsManagerExceptionContext>? OnLoadException { get; set; }
 
     private ISystemsManagerProcessor GetProcessor()
     {
-        return _useLambdaCacheLayer
-            ? new LambdaCacheAppConfigFreeFormConfigurationProcessor(this, _logger)
-            : new AppConfigDataProcessor(this, _logger);
+        return useLambdaCacheLayer
+            ? new LambdaCacheAppConfigFreeFormConfigurationProcessor(this, logger)
+            : new AppConfigDataProcessor(this, logger);
     }
 }

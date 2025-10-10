@@ -8,9 +8,9 @@ namespace Opc.AwsSettings.SystemsManager.ParameterStore;
 /// <summary>
 ///     Parameter processor based on Default Parameter processor with support for json array
 /// </summary>
-public class ArraySupportParameterProcessor : DefaultParameterProcessor
+internal sealed class ArraySupportParameterProcessor : DefaultParameterProcessor
 {
-    public override string GetValue(Parameter parameter, string path)
+    public override string? GetValue(Parameter parameter, string path)
     {
         if (parameter.Value is null) return parameter.Value;
 

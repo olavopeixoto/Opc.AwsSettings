@@ -4,7 +4,7 @@ using Opc.AwsSettings.SystemsManager.AppConfig.AppConfigData;
 
 namespace Opc.AwsSettings.SystemsManager.AppConfig.Lambda;
 
-public class LambdaCacheAppConfigFreeFormConfigurationProcessor : AppConfigDataProcessor
+internal class LambdaCacheAppConfigFreeFormConfigurationProcessor : AppConfigDataProcessor
 {
     private const string MediaTypeApplicationJson = "application/json";
     private static readonly HttpClient HttpClient = new();

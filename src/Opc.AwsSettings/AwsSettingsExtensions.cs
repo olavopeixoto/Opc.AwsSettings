@@ -1,13 +1,15 @@
-﻿using Microsoft.Extensions.Hosting;
+﻿using JetBrains.Annotations;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 
 // ReSharper disable once CheckNamespace
 namespace Microsoft.Extensions.Configuration;
 
+[PublicAPI]
 public static class AwsSettingsExtensions
 {
     /// <summary>
-    ///     Add configuration source from AWS Parameter Store, Secrets Manager, AppConfig Freeform Configuration and AppConfig
+    ///     Add a configuration source from AWS Parameter Store, Secrets Manager, AppConfig Freeform Configuration and AppConfig
     ///     Feature Flags
     /// </summary>
     /// <param name="builder">HostBuilder</param>

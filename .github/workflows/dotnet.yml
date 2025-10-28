@@ -25,6 +25,10 @@ jobs:
         if: github.event_name == 'push' && github.ref == 'refs/heads/master'
         run: dotnet pack src/Opc.AwsSettings/Opc.AwsSettings.csproj --configuration Release --no-build --output ./artifacts
 
+      - name: Publish to NuGet.org
+        if: github.event_name == 'push' && github.ref == 'refs/heads/master'
+        run: dotnet nuget push ./artifacts/*.nupkg --api-key ${{ secrets.NUGET_API_KEY }} --source https://api.nuget.org/v3/index.json --skip-duplicate
+
       - name: Get version from csproj
         if: github.event_name == 'push' && github.ref == 'refs/heads/master'
         id: get_version

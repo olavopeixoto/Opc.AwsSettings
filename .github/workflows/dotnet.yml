@@ -37,25 +37,20 @@ jobs:
           echo "version=$VERSION" >> $GITHUB_OUTPUT
           echo "Version: $VERSION"
 
+      - name: Delete existing release if it exists
+        if: github.event_name == 'push' && github.ref == 'refs/heads/master'
+        continue-on-error: true
+        run: |
+          gh release delete v${{ steps.get_version.outputs.version }} --yes --cleanup-tag
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
       - name: Create Release
         if: github.event_name == 'push' && github.ref == 'refs/heads/master'
-        id: create_release
-        uses: actions/create-release@v1
+        run: |
+          gh release create v${{ steps.get_version.outputs.version }} \
+            ./artifacts/Opc.AwsSettings.${{ steps.get_version.outputs.version }}.nupkg \
+            --title "Release v${{ steps.get_version.outputs.version }}" \
+            --notes "Automated release for version ${{ steps.get_version.outputs.version }}"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          tag_name: v${{ steps.get_version.outputs.version }}
-          release_name: Release v${{ steps.get_version.outputs.version }}
-          draft: false
-          prerelease: false
-
-      - name: Upload Release Asset
-        if: github.event_name == 'push' && github.ref == 'refs/heads/master'
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ./artifacts/Opc.AwsSettings.${{ steps.get_version.outputs.version }}.nupkg
-          asset_name: Opc.AwsSettings.${{ steps.get_version.outputs.version }}.nupkg
-          asset_content_type: application/zip

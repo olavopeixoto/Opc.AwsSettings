@@ -12,8 +12,9 @@
         <LangVersion>latest</LangVersion>
         <SignAssembly>False</SignAssembly>
         <LangVersion>default</LangVersion>
-        <Version>1.2.1</Version>
+        <Version>1.2.2</Version>
         <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+        <PackageReadmeFile>README.md</PackageReadmeFile>
     </PropertyGroup>
 
     <ItemGroup>
@@ -33,6 +34,10 @@
         <PackageReference Include="AWSSDK.SecretsManager" Version="4.0.2"/>
         <PackageReference Include="AWSSDK.SecurityToken" Version="4.0.2.11"/>
         <PackageReference Include="AWSSDK.SimpleSystemsManagement" Version="4.0.5.2"/>
+    </ItemGroup>
+
+    <ItemGroup>
+        <None Include="..\..\README.md" Pack="true" PackagePath="\"/>
     </ItemGroup>
 
 </Project>

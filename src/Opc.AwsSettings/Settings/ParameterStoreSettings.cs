@@ -1,8 +1,5 @@
-using JetBrains.Annotations;
-
 namespace Opc.AwsSettings.Settings;
 
-[PublicAPI]
 public sealed record ParameterStoreSettings
 {
     /// <summary>
@@ -22,11 +19,11 @@ public sealed record ParameterStoreSettings
     ///     public record MyOption2(MyOtherObject MyProperty);
     ///     public record MyOtherObject(string MyKey);
     /// </example>
-    public string[] Paths { get; init; } = [];
+    public string[] Paths { get; set; } = [];
 
     /// <summary>
     ///     If you need custom mapping between Parameter Store names and your Options objects you may use this settings instead
     ///     of just Paths.
     /// </summary>
-    public ParameterStoreKeySettings[] Keys { get; init; } = [];
+    public ParameterStoreKeySettings[] Keys { get; set; } = [];
 }

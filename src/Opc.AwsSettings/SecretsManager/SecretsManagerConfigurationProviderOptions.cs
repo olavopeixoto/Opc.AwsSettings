@@ -49,7 +49,7 @@ public sealed class SecretsManagerConfigurationProviderOptions
     /// };
     /// </code>
     /// </example>
-    public Func<List<Filter>> ListSecretsFilters { get; set; } = () => new List<Filter>();
+    public Func<List<Filter>> ListSecretsFilters { get; set; } = () => [];
 
     /// <summary>
     ///     Defines a function that can be used to generate secret keys.

@@ -1,14 +1,11 @@
-using JetBrains.Annotations;
-
 namespace Opc.AwsSettings.Settings;
 
-[PublicAPI]
 public sealed record ParameterStoreKeySettings
 {
     /// <summary>
     ///     Use prefix /aws/reference/secretsmanager/{my-key} for Secrets Manager values
     /// </summary>
-    public required string Path { get; init; }
+    public required string Path { get; set; }
 
     /// <summary>
     ///     Alternative name to map to configuration.
@@ -18,7 +15,7 @@ public sealed record ParameterStoreKeySettings
     ///     Alias = BeautifulName
     ///     This would map to BeautifulName instead of Awe@ful.Key+Name
     /// </example>
-    public string? Alias { get; init; }
+    public string? Alias { get; set; }
 
-    public bool Optional { get; init; }
+    public bool Optional { get; set; }
 }

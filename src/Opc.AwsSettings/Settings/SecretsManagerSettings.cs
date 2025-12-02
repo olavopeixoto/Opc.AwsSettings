@@ -1,21 +1,18 @@
-using JetBrains.Annotations;
-
 namespace Opc.AwsSettings.Settings;
 
-[PublicAPI]
 public sealed record SecretsManagerSettings
 {
     /// <summary>
     /// </summary>
-    public bool LoadAll { get; init; } = false;
+    public bool LoadAll { get; set; } = false;
 
     /// <summary>
     /// </summary>
-    public List<string>? AcceptedSecretArns { get; init; } = new();
+    public List<string>? AcceptedSecretArns { get; set; } = [];
 
     /// <summary>
     /// </summary>
-    public string? Prefix { get; init; }
+    public string? Prefix { get; set; }
 
-    public bool Optional { get; init; }
+    public bool Optional { get; set; }
 }

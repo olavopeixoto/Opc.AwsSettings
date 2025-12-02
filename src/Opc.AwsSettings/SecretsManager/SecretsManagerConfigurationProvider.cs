@@ -1,14 +1,11 @@
+using System.Text.Json;
 using Amazon.SecretsManager;
 using Amazon.SecretsManager.Model;
-using JetBrains.Annotations;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 
 namespace Opc.AwsSettings.SecretsManager;
 
-[PublicAPI]
 internal sealed class SecretsManagerConfigurationProvider(
     IAmazonSecretsManager client,
     SecretsManagerConfigurationProviderOptions options,
@@ -17,7 +14,7 @@ internal sealed class SecretsManagerConfigurationProvider(
 {
     private CancellationTokenSource? _cancellationToken;
 
-    private HashSet<(string, string)> _loadedValues = new();
+    private HashSet<(string, string)> _loadedValues = [];
     private Task? _pollingTask;
 
     public SecretsManagerConfigurationProviderOptions Options { get; } = options ?? throw new ArgumentNullException(nameof(options));
@@ -98,77 +95,102 @@ internal sealed class SecretsManagerConfigurationProvider(
         }
     }
 
-    private static bool TryParseJson(string data, out JToken? jToken)
+    private static bool TryParseJson(string data, out JsonElement? jsonElement)
     {
-        jToken = null;
+        jsonElement = null;
 
         data = data.TrimStart();
         var firstChar = data.FirstOrDefault();
 
-        if (firstChar != '[' && firstChar != '{') return false;
+        if (firstChar != '[' && firstChar != '{')
+        {
+            return false;
+        }
 
         try
         {
-            jToken = JToken.Parse(data);
-
+            using var jsonDocument = JsonDocument.Parse(data);
+            //  https://docs.microsoft.com/en-us/dotnet/standard/serialization/system-text-json-use-dom-utf8jsonreader-utf8jsonwriter?pivots=dotnet-6-0#jsondocument-is-idisposable
+            //  Its recommended to return the clone of the root element as the json document will be disposed
+            jsonElement = jsonDocument.RootElement.Clone();
             return true;
         }
-        catch (JsonReaderException)
+        catch (JsonException)
         {
             return false;
         }
     }
-
-    private static IEnumerable<(string key, string value)> ExtractValues(JToken? token, string prefix)
+    private static IEnumerable<(string key, string value)> ExtractValues(JsonElement? jsonElement, string prefix)
     {
-        switch (token)
+        if (jsonElement == null)
         {
-            case JArray array:
-            {
-                for (var i = 0; i < array.Count; i++)
+            yield break;
+        }
+        var element = jsonElement.Value;
+        switch (element.ValueKind)
+        {
+            case JsonValueKind.Array:
                 {
-                    var secretKey = $"{prefix}{ConfigurationPath.KeyDelimiter}{i}";
-                    foreach (var (key, value) in ExtractValues(array[i], secretKey)) yield return (key, value);
-                }
-
-                break;
-            }
-            case JObject jObject:
-            {
-                foreach (var property in jObject.Properties())
-                {
-                    var secretKey = $"{prefix}{ConfigurationPath.KeyDelimiter}{property.Name}";
-
-                    if (property.Value.HasValues)
+                    var currentIndex = 0;
+                    foreach (var el in element.EnumerateArray())
                     {
-                        foreach (var (key, value) in ExtractValues(property.Value, secretKey))
+                        var secretKey = $"{prefix}{ConfigurationPath.KeyDelimiter}{currentIndex}";
+                        foreach (var (key, value) in ExtractValues(el, secretKey))
+                        {
                             yield return (key, value);
+                        }
+                        currentIndex++;
                     }
-                    else
-                    {
-                        var value = property.Value.ToString();
-                        yield return (secretKey, value);
-                    }
+                    break;
                 }
-
-                break;
-            }
-            case JValue jValue:
-            {
-                var value = jValue.Value?.ToString() ?? string.Empty;
-                yield return (prefix, value);
-                break;
-            }
+            case JsonValueKind.Number:
+                {
+                    var value = element.GetRawText();
+                    yield return (prefix, value);
+                    break;
+                }
+            case JsonValueKind.String:
+                {
+                    var value = element.GetString() ?? "";
+                    yield return (prefix, value);
+                    break;
+                }
+            case JsonValueKind.True:
+                {
+                    var value = element.GetBoolean();
+                    yield return (prefix, value.ToString());
+                    break;
+                }
+            case JsonValueKind.False:
+                {
+                    var value = element.GetBoolean();
+                    yield return (prefix, value.ToString());
+                    break;
+                }
+            case JsonValueKind.Object:
+                {
+                    foreach (var property in element.EnumerateObject())
+                    {
+                        var secretKey = $"{prefix}{ConfigurationPath.KeyDelimiter}{property.Name}";
+                        foreach (var (key, value) in ExtractValues(property.Value, secretKey))
+                        {
+                            yield return (key, value);
+                        }
+                    }
+                    break;
+                }
+            case JsonValueKind.Undefined:
+            case JsonValueKind.Null:
             default:
-            {
-                throw new FormatException("unsupported json token");
-            }
+                {
+                    throw new FormatException("unsupported json token");
+                }
         }
     }
 
     private void SetData(IEnumerable<(string, string)> values, bool triggerReload)
     {
-        Data = values.ToDictionary(x => x.Item1, x => x.Item2, StringComparer.InvariantCultureIgnoreCase);
+        Data = values.ToDictionary(x => x.Item1, x => x.Item2, StringComparer.InvariantCultureIgnoreCase)!;
 
         if (triggerReload) OnReload();
     }

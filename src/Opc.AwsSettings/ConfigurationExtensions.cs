@@ -1,19 +1,17 @@
 using System.Text.RegularExpressions;
 using Amazon.SecretsManager;
 using Amazon.SecretsManager.Model;
-using JetBrains.Annotations;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
-using Opc.AwsSettings.Settings;
 using Opc.AwsSettings;
 using Opc.AwsSettings.SecretsManager;
+using Opc.AwsSettings.Settings;
 using Opc.AwsSettings.SystemsManager.AppConfig.AppConfigData;
 using Opc.AwsSettings.SystemsManager.ParameterStore;
 
 // ReSharper disable once CheckNamespace
 namespace Microsoft.Extensions.Configuration;
 
-[PublicAPI]
 public static class ConfigurationExtensions
 {
     private static string GetEnvironmentName(string? environmentName)
@@ -71,10 +69,10 @@ public static class ConfigurationExtensions
         return configurationBuilder;
     }
 
-    public static void AddParameterStore(this IConfigurationBuilder configurationBuilder,
+    public static IConfigurationBuilder AddParameterStore(this IConfigurationBuilder configurationBuilder,
         ParameterStoreSettings? settings, TimeSpan? reloadAfter, ILogger? logger = null)
     {
-        if (settings is null) return;
+        if (settings is null) return configurationBuilder;
 
         var keys = settings.Keys
             .Union(settings.Paths
@@ -87,16 +85,17 @@ public static class ConfigurationExtensions
 
         foreach (var key in keys)
             AddParameterStore(configurationBuilder, key, reloadAfter, logger);
+
+        return configurationBuilder;
     }
 
-    public static void AddParameterStore(this IConfigurationBuilder configurationBuilder, ParameterStoreKeySettings key,
+    public static IConfigurationBuilder AddParameterStore(this IConfigurationBuilder configurationBuilder, ParameterStoreKeySettings key,
         TimeSpan? reloadAfter, ILogger? logger)
     {
         configurationBuilder.AddSystemsManager(options =>
         {
             options.Optional = false;
             options.Path = key.Path;
-            options.Prefix = key.Alias;
             options.ReloadAfter = reloadAfter;
 
             options.OnLoadException = exceptionContext =>
@@ -105,16 +104,18 @@ public static class ConfigurationExtensions
                 exceptionContext.Ignore = key.Optional;
             };
 
-            options.ParameterProcessor = new ArraySupportParameterProcessor();
+            options.ParameterProcessor = new AwsSettingsParameterProcessor(logger, key);
 
             logger?.AddedParameterStore(key.Path, reloadAfter);
         });
+
+        return configurationBuilder;
     }
 
-    public static void AddAppConfig(this IConfigurationBuilder configurationBuilder, AppConfigSettings? settings,
+    public static IConfigurationBuilder AddAppConfig(this IConfigurationBuilder configurationBuilder, AppConfigSettings? settings,
         TimeSpan? reloadAfter, string environmentName, ILogger? logger = null)
     {
-        if (settings is null) return;
+        if (settings is null) return configurationBuilder;
 
         foreach (var config in settings.ConfigurationProfiles)
         {
@@ -138,18 +139,20 @@ public static class ConfigurationExtensions
             logger?.AddedAppConfigDataConfiguration(settings.ApplicationIdentifier, environmentName, config.Identifier,
                 reloadAfter);
         }
+
+        return configurationBuilder;
     }
 
-    public static void AddSecretsManager(this IConfigurationBuilder configurationBuilder,
+    public static IConfigurationBuilder AddSecretsManager(this IConfigurationBuilder configurationBuilder,
         SecretsManagerSettings? settings, TimeSpan? reloadAfter, string environmentName, ILogger? logger = null)
     {
-        if (settings is null) return;
+        if (settings is null) return configurationBuilder;
 
         var secretsManagerPrefix = settings.Prefix?.TrimStart('/').TrimEnd('/');
 
         if (secretsManagerPrefix is null &&
             (settings.AcceptedSecretArns is null || settings.AcceptedSecretArns.Count <= 0))
-            return;
+            return configurationBuilder;
 
         configurationBuilder.AddSecretsManager(options =>
         {
@@ -200,5 +203,7 @@ public static class ConfigurationExtensions
                 };
             }
         }, logger);
+
+        return configurationBuilder;
     }
 }

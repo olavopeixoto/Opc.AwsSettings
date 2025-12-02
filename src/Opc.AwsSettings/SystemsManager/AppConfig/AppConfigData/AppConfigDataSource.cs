@@ -31,7 +31,7 @@ internal sealed class AppConfigDataSource(ILogger? logger = null, bool useLambda
     ///     If null, Feature Flags will not be refreshed.
     /// </summary>
     /// <example>
-    ///     <code>
+    /// <code>
     /// ReloadAfter = TimeSpan.FromMinutes(15);
     /// </code>
     /// </example>

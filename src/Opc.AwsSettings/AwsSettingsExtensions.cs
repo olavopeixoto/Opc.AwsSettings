@@ -1,11 +1,9 @@
-﻿using JetBrains.Annotations;
-using Microsoft.Extensions.Hosting;
+﻿using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 
 // ReSharper disable once CheckNamespace
 namespace Microsoft.Extensions.Configuration;
 
-[PublicAPI]
 public static class AwsSettingsExtensions
 {
     /// <summary>
@@ -21,6 +19,20 @@ public static class AwsSettingsExtensions
         {
             configurationBuilder.AddAwsSettings(context.HostingEnvironment.EnvironmentName, logger);
         });
+
+        return builder;
+    }
+
+    /// <summary>
+    ///     Add a configuration source from AWS Parameter Store, Secrets Manager, AppConfig Freeform Configuration and AppConfig
+    ///     Feature Flags
+    /// </summary>
+    /// <param name="builder">HostApplicationBuilder</param>
+    /// <param name="logger">Optional logger to return information about data being loaded</param>
+    /// <returns></returns>
+    public static IHostApplicationBuilder AddAwsSettings(this IHostApplicationBuilder builder, ILogger? logger = null)
+    {
+        builder.Configuration.AddAwsSettings(builder.Environment.EnvironmentName, logger);
 
         return builder;
     }

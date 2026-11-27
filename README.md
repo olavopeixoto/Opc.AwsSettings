@@ -466,7 +466,7 @@ Contributions are welcome! Please feel free to submit a Pull Request.
 
 ## License
 
-This project is open source. Please check the repository for license details.
+This project is licensed under the [MIT License](LICENSE) — free to use, modify, and distribute, including for commercial purposes.
 
 ## Links
 

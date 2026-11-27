@@ -6,6 +6,7 @@
         <Nullable>enable</Nullable>
         <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
         <Authors>Olavo Castro</Authors>
+        <PackageLicenseExpression>MIT</PackageLicenseExpression>
         <Company>OPC</Company>
         <PackageTags>AWS;Parameter Store;Secrets Manager;AppConfig;Feature Flags</PackageTags>
         <RepositoryUrl>https://github.com/olavopeixoto/opc.awssettings</RepositoryUrl>

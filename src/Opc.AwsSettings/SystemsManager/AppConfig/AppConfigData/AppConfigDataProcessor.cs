@@ -93,7 +93,7 @@ internal class AppConfigDataProcessor : ISystemsManagerProcessor
 
     private IDictionary<string, string> ParseData(Stream responseStream)
     {
-        var tempData = JsonConfigurationParser.Parse(responseStream);
+        var tempData = JsonConfigurationParser.Parse(string.Empty, responseStream);
 
         if (tempData is null) return new Dictionary<string, string>();
 
